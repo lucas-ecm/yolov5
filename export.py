@@ -59,7 +59,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 from torch.utils.mobile_optimizer import optimize_for_mobile
-from utils.torch_utils import prune
+from utils.torch_utils import prune as prune_pytorch
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -551,7 +551,7 @@ def run(
 
     # Attempt pruning
     if prune:
-        prune(model, sparsity)
+        prune_pytorch(model, sparsity)
     
     # Checks
     imgsz *= 2 if len(imgsz) == 1 else 1  # expand
