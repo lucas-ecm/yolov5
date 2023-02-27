@@ -550,7 +550,8 @@ def run(
     model = attempt_load(weights, device=device, inplace=True, fuse=True)  # load FP32 model
 
     # Attempt pruning
-    prune(model, sparsity)
+    if prune:
+        prune(model, sparsity)
     
     # Checks
     imgsz *= 2 if len(imgsz) == 1 else 1  # expand
