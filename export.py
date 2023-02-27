@@ -59,6 +59,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 from torch.utils.mobile_optimizer import optimize_for_mobile
+from utils.torch_utils import prune
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -530,6 +531,8 @@ def run(
         topk_all=100,  # TF.js NMS: topk for all classes to keep
         iou_thres=0.45,  # TF.js NMS: IoU threshold
         conf_thres=0.25,  # TF.js NMS: confidence threshold
+        prune=False,
+        sparsity = 0.5,
 ):
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
@@ -546,6 +549,9 @@ def run(
         assert not dynamic, '--half not compatible with --dynamic, i.e. use either --half or --dynamic but not both'
     model = attempt_load(weights, device=device, inplace=True, fuse=True)  # load FP32 model
 
+    # Attempt pruning
+    prune(model, sparsity)
+    
     # Checks
     imgsz *= 2 if len(imgsz) == 1 else 1  # expand
     if optimize:
@@ -657,6 +663,8 @@ def parse_opt(known=False):
         nargs='+',
         default=['torchscript'],
         help='torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle')
+    parser.add_argument('--prune', action='store_true', help='prune PyTorch model')
+    parser.add_argument('--sparsity', type=float, default=0.5, help='Sparsity rate for pruning')
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     print_args(vars(opt))
     return opt
