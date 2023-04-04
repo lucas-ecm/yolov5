@@ -115,17 +115,38 @@ def run(
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
     for path, im, im0s, vid_cap, s in dataset:
+        print('path:')
+        print(path)
+        print('im')
+        print(im)
+        print('im0s')
+        print(im0s)
+        print('vid_cap')
+        print(vid_cap)
+        print('s')
+        print(s)
+        
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
+            print('im')
+            print(im)
+            print('model.fp16')
+            print( model.fp16 )
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
             im /= 255  # 0 - 255 to 0.0 - 1.0
+            print('len(im.shape)')
+            print(len(im.shape))
             if len(im.shape) == 3:
                 im = im[None]  # expand for batch dim
 
         # Inference
         with dt[1]:
             visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
+            print('visualize')
+            print(visualize)
             pred = model(im, augment=augment, visualize=visualize)
+            print('pred')
+            print(pred)
 
         # NMS
         with dt[2]:
