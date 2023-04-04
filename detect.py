@@ -119,8 +119,10 @@ def run(
         print(path)
         print('im')
         print(im)
+        print(np.shape(im))
         print('im0s')
         print(im0s)
+        print(np.shape(im0s))
         print('vid_cap')
         print(vid_cap)
         print('s')
@@ -130,6 +132,7 @@ def run(
             im = torch.from_numpy(im).to(model.device)
             print('im')
             print(im)
+            print(np.shape(im))
             print('model.fp16')
             print( model.fp16 )
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -138,6 +141,9 @@ def run(
             print(len(im.shape))
             if len(im.shape) == 3:
                 im = im[None]  # expand for batch dim
+                print('im')
+                print(im)
+                print(np.shape(im))
 
         # Inference
         with dt[1]:
