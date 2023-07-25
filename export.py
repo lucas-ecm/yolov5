@@ -544,7 +544,7 @@ def run(
     jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle = flags  # export booleans
     file = Path(url2file(weights) if str(weights).startswith(('http:/', 'https:/')) else weights)  # PyTorch weights
     if use_custom_filename:
-        file = filename
+        file = Path(filename)
 
     # Load PyTorch model
     device = select_device(device)
