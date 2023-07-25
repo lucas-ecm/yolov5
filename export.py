@@ -533,6 +533,8 @@ def run(
         conf_thres=0.25,  # TF.js NMS: confidence threshold
         prune=False,
         sparsity = 0.5,
+        use_custom_filename = False,
+        filename = None,
 ):
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
@@ -541,6 +543,8 @@ def run(
     assert sum(flags) == len(include), f'ERROR: Invalid --include {include}, valid --include arguments are {fmts}'
     jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle = flags  # export booleans
     file = Path(url2file(weights) if str(weights).startswith(('http:/', 'https:/')) else weights)  # PyTorch weights
+    if use_custom_filename:
+        file = filename
 
     # Load PyTorch model
     device = select_device(device)
@@ -638,6 +642,8 @@ def run(
 
 def parse_opt(known=False):
     parser = argparse.ArgumentParser()
+    parser.add_argument('--use_custom_filename', action='store_true')
+    parser.add_argument('--filename', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
     parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640], help='image (h, w)')
