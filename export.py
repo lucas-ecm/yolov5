@@ -533,6 +533,7 @@ def run(
         conf_thres=0.25,  # TF.js NMS: confidence threshold
         prune=False,
         sparsity = 0.5,
+        pruning_type = 'l1',
         use_custom_filename = False,
         filename = None,
 ):
@@ -555,7 +556,7 @@ def run(
 
     # Attempt pruning
     if prune:
-        prune_pytorch(model, sparsity)
+        prune_pytorch(model, sparsity, pruning_type)
     
     # Checks
     imgsz *= 2 if len(imgsz) == 1 else 1  # expand
@@ -672,6 +673,7 @@ def parse_opt(known=False):
         help='torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle')
     parser.add_argument('--prune', action='store_true', help='prune PyTorch model')
     parser.add_argument('--sparsity', type=float, default=0.5, help='Sparsity rate for pruning')
+    parser.add_argument('--pruning_type', type=str, default='l1', help='Pruning type')
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     print_args(vars(opt))
     return opt
