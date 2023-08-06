@@ -45,6 +45,7 @@ from utils.general import (LOGGER, TQDM_BAR_FORMAT, Profile, check_dataset, chec
 from utils.metrics import ConfusionMatrix, ap_per_class, box_iou
 from utils.plots import output_to_target, plot_images, plot_val_study
 from utils.torch_utils import select_device, smart_inference_mode
+from utils.torch_utils import prune as prune_pytorch
 
 
 def save_one_txt(predn, save_conf, shape, file):
