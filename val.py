@@ -125,6 +125,9 @@ def run(
         plots=True,
         callbacks=Callbacks(),
         compute_loss=None,
+        prune=False,
+        sparsity = 0.5,
+        pruning_type = 'l1',
 ):
     # Initialize/load model and set device
     training = model is not None
@@ -154,7 +157,11 @@ def run(
 
         # Data
         data = check_dataset(data)  # check
-
+    
+    # Attempt pruning
+    if prune:
+        prune_pytorch(model, sparsity, pruning_type)
+        
     # Configure
     model.eval()
     cuda = device.type != 'cpu'
@@ -361,6 +368,9 @@ def parse_opt():
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
+    parser.add_argument('--prune', action='store_true', help='prune PyTorch model')
+    parser.add_argument('--sparsity', type=float, default=0.5, help='Sparsity rate for pruning')
+    parser.add_argument('--pruning_type', type=str, default='l1', help='Pruning type')
     opt = parser.parse_args()
     opt.data = check_yaml(opt.data)  # check YAML
     opt.save_json |= opt.data.endswith('coco.yaml')
