@@ -55,6 +55,7 @@ import sys
 import time
 import warnings
 from pathlib import Path
+import copy as copy_lib
 
 import pandas as pd
 import torch
@@ -378,13 +379,13 @@ def export_pb(keras_model, file, prefix=colorstr('TensorFlow GraphDef:')):
 
 
 @try_export
-def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=colorstr('TensorFlow Lite:')):
+def export_tflite(keras_model, im, old_file, file, int8, data, nms, agnostic_nms, prefix=colorstr('TensorFlow Lite:')):
     # YOLOv5 TensorFlow Lite export
     import tensorflow as tf
 
     LOGGER.info(f'\n{prefix} starting export with tensorflow {tf.__version__}...')
     batch_size, ch, *imgsz = list(im.shape)  # BCHW
-    f = str(file).replace('.pt', '-fp16.tflite')
+    f = str(old_file).replace('.pt', '-fp16.tflite')
 
     converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
@@ -404,8 +405,8 @@ def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=c
         converter.target_spec.supported_ops.append(tf.lite.OpsSet.SELECT_TF_OPS)
 
     tflite_model = converter.convert()
-    open(f, 'wb').write(tflite_model)
-    return f, None
+    open(file, 'wb').write(tflite_model)
+    return file, None
 
 
 @try_export
@@ -545,6 +546,7 @@ def run(
     jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle = flags  # export booleans
     file = Path(url2file(weights) if str(weights).startswith(('http:/', 'https:/')) else weights)  # PyTorch weights
     if use_custom_filename:
+        old_file = copy_lib.copy(file)
         file = Path(filename)
 
     # Load PyTorch model
@@ -602,7 +604,8 @@ def run(
         assert not isinstance(model, ClassificationModel), 'ClassificationModel export to TF formats not yet supported.'
         f[5], s_model = export_saved_model(model.cpu(),
                                            im,
-                                           file,
+                                           #file,
+                                           old_file,
                                            dynamic,
                                            tf_nms=nms or agnostic_nms or tfjs,
                                            agnostic_nms=agnostic_nms or tfjs,
@@ -614,7 +617,7 @@ def run(
         if pb or tfjs:  # pb prerequisite to tfjs
             f[6], _ = export_pb(s_model, file)
         if tflite or edgetpu:
-            f[7], _ = export_tflite(s_model, im, file, int8 or edgetpu, data=data, nms=nms, agnostic_nms=agnostic_nms)
+            f[7], _ = export_tflite(s_model, im, old_file, file, int8 or edgetpu, data=data, nms=nms, agnostic_nms=agnostic_nms)
             if edgetpu:
                 f[8], _ = export_edgetpu(file)
             add_tflite_metadata(f[8] or f[7], metadata, num_outputs=len(s_model.outputs))
